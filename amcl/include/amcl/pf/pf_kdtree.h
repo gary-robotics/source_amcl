@@ -37,7 +37,7 @@
 typedef struct pf_kdtree_node
 {
   // Depth in the tree
-  int leaf, depth;
+  int leaf, depth;//是叶子吗？有多深？
 
   // Pivot dimension and value
   int pivot_dim;
