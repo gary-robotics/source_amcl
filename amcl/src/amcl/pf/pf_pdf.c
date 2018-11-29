@@ -42,13 +42,13 @@ static unsigned int pf_pdf_seed;
  * Gaussian
  *************************************************************************/
 
-// Create a gaussian pdf
+// Create a gaussian pdf@TODO
 pf_pdf_gaussian_t *pf_pdf_gaussian_alloc(pf_vector_t x, pf_matrix_t cx)
 {
   pf_matrix_t cd;
   pf_pdf_gaussian_t *pdf;
 
-  pdf = calloc(1, sizeof(pf_pdf_gaussian_t));
+  pdf = calloc(1, sizeof(pf_pdf_gaussian_t));//@TODO:malloc和calloc的区别
 
   pdf->x = x;
   pdf->cx = cx;
@@ -56,7 +56,7 @@ pf_pdf_gaussian_t *pf_pdf_gaussian_alloc(pf_vector_t x, pf_matrix_t cx)
 
   // Decompose the convariance matrix into a rotation
   // matrix and a diagonal matrix.
-  pf_matrix_unitary(&pdf->cr, &cd, pdf->cx);
+  pf_matrix_unitary(&pdf->cr, &cd, pdf->cx);//@TODO
   pdf->cd.v[0] = sqrt(cd.m[0][0]);
   pdf->cd.v[1] = sqrt(cd.m[1][1]);
   pdf->cd.v[2] = sqrt(cd.m[2][2]);
@@ -64,7 +64,7 @@ pf_pdf_gaussian_t *pf_pdf_gaussian_alloc(pf_vector_t x, pf_matrix_t cx)
   // Initialize the random number generator
   //pdf->rng = gsl_rng_alloc(gsl_rng_taus);
   //gsl_rng_set(pdf->rng, ++pf_pdf_seed);
-  srand48(++pf_pdf_seed);
+  srand48(++pf_pdf_seed);//@TODO: 怎么就高斯采样了?
 
   return pdf;
 }

@@ -35,7 +35,7 @@
 
 
 // Create a new map
-map_t *map_alloc(void)
+map_t *map_alloc(void)//开辟空间,内容置零/空,准备被赋值
 {
   map_t *map;
 

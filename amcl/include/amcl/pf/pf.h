@@ -41,8 +41,8 @@ struct _rtk_fig_t;
 struct _pf_sample_set_t;
 
 // Function prototype for the initialization model; generates a sample pose from
-// an appropriate distribution.
-typedef pf_vector_t (*pf_init_model_fn_t) (void *init_data);
+// an appropriate distribution.按照某种分布产生一个采样
+typedef pf_vector_t (*pf_init_model_fn_t) (void *init_data);//@TODO：这是什么定义方式??
 
 // Function prototype for the action model; generates a sample pose from
 // an appropriate distribution
@@ -80,7 +80,7 @@ typedef struct
   pf_vector_t mean;
   pf_matrix_t cov;
 
-  // Workspace
+  // Workspace@TODO:这是什么？？
   double m[4], c[2][2];
   
 } pf_cluster_t;
@@ -114,14 +114,14 @@ typedef struct _pf_t
   int min_samples, max_samples;
 
   // Population size parameters
-  double pop_err, pop_z;
+  double pop_err, pop_z;//@TODO:这是什么？
   
   // The sample sets.  We keep two sets and use [current_set]
   // to identify the active set.
   int current_set;
   pf_sample_set_t sets[2];
 
-  // Running averages, slow and fast, of likelihood
+  // Running averages, slow and fast, of likelihood 自适应采样相关参数
   double w_slow, w_fast;
 
   // Decay rates for running averages
@@ -130,7 +130,7 @@ typedef struct _pf_t
   // Function used to draw random pose samples
   pf_init_model_fn_t random_pose_fn;
   void *random_pose_data;
-
+  ///认为粒子收敛了的条件
   double dist_threshold; //distance threshold in each axis over which the pf is considered to not be converged
   int converged; 
 } pf_t;

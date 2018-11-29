@@ -49,7 +49,7 @@ typedef struct
   int occ_state;
 
   // Distance to the nearest occupied cell
-  double occ_dist;
+  double occ_dist;//@TODO
 
   // Wifi levels
   //int wifi_levels[MAP_WIFI_MAX_LEVELS];
@@ -61,7 +61,7 @@ typedef struct
 typedef struct
 {
   // Map origin; the map is a viewport onto a conceptual larger map.
-  double origin_x, origin_y;
+  double origin_x, origin_y;//地图原点@TODO
   
   // Map scale (m/cell)
   double scale;
@@ -74,7 +74,7 @@ typedef struct
 
   // Max distance at which we care about obstacles, for constructing
   // likelihood field
-  double max_occ_dist;
+  double max_occ_dist;//@TODO
   
 } map_t;
 

@@ -65,15 +65,15 @@ static void pf_kdtree_draw_node(pf_kdtree_t *self, pf_kdtree_node_t *node, rtk_f
 // Create a tree
 pf_kdtree_t *pf_kdtree_alloc(int max_size)
 {
-  pf_kdtree_t *self;
+  pf_kdtree_t *self;//先开辟一块树的地址
 
   self = calloc(1, sizeof(pf_kdtree_t));
 
-  self->size[0] = 0.50;
+  self->size[0] = 0.50;//默认pose放大系数
   self->size[1] = 0.50;
   self->size[2] = (10 * M_PI / 180);
 
-  self->root = NULL;
+  self->root = NULL;//根节点后边等待赋值
 
   self->node_count = 0;
   self->node_max_count = max_size;
@@ -89,8 +89,8 @@ pf_kdtree_t *pf_kdtree_alloc(int max_size)
 // Destroy a tree
 void pf_kdtree_free(pf_kdtree_t *self)
 {
-  free(self->nodes);
-  free(self);
+  free(self->nodes);//清空节点的空间
+  free(self);//清空树的空间
   return;
 }
 
@@ -99,7 +99,7 @@ void pf_kdtree_free(pf_kdtree_t *self)
 // Clear all entries from the tree
 void pf_kdtree_clear(pf_kdtree_t *self)
 {
-  self->root = NULL;
+  self->root = NULL;//将树的根去除
   self->leaf_count = 0;
   self->node_count = 0;
 
@@ -108,12 +108,12 @@ void pf_kdtree_clear(pf_kdtree_t *self)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Insert a pose into the tree.
+// Insert a pose into the tree.没什么用，就是把pose里的数组拿出来.把这个函数放到头文件里当做接口。里面真正起作用的函数没被放到头文件里
 void pf_kdtree_insert(pf_kdtree_t *self, pf_vector_t pose, double value)
 {
   int key[3];
 
-  key[0] = floor(pose.v[0] / self->size[0]);
+  key[0] = floor(pose.v[0] / self->size[0]);//放大后的最大整数
   key[1] = floor(pose.v[1] / self->size[1]);
   key[2] = floor(pose.v[2] / self->size[2]);
 
@@ -212,30 +212,30 @@ int pf_kdtree_equal(pf_kdtree_t *self, int key_a[], int key_b[])
 
 ////////////////////////////////////////////////////////////////////////////////
 // Insert a node into the tree
-pf_kdtree_node_t *pf_kdtree_insert_node(pf_kdtree_t *self, pf_kdtree_node_t *parent,
+pf_kdtree_node_t *pf_kdtree_insert_node(pf_kdtree_t *self, pf_kdtree_node_t *parent,//node：我们在树中一个个的看节点，然后和当前要插入的值对比。node就是我们正在看的节点
                                         pf_kdtree_node_t *node, int key[], double value)
 {
   int i;
   int split, max_split;
 
-  // If the node doesnt exist yet...
-  if (node == NULL)
+  // If the node doesnt exist yet...注意这里函数被调用的时候node值=root，每次都从根节点开始对比
+  if (node == NULL)//如果还没有可以和外来值对比的节点
   {
     assert(self->node_count < self->node_max_count);
-    node = self->nodes + self->node_count++;
-    memset(node, 0, sizeof(pf_kdtree_node_t));
+    node = self->nodes + self->node_count++;//给node一个地址
+    memset(node, 0, sizeof(pf_kdtree_node_t));//先清空本node的内容
 
-    node->leaf = 1;
+    node->leaf = 1;//白手起家（自己没出现过）必是叶节点
 
-    if (parent == NULL)
+    if (parent == NULL)//node的深度
       node->depth = 0;
     else
       node->depth = parent->depth + 1;
 
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++)//给node个pose值
       node->key[i] = key[i];
 
-    node->value = value;
+    node->value = value;//权重值
     self->leaf_count += 1;
   }
 
@@ -243,13 +243,13 @@ pf_kdtree_node_t *pf_kdtree_insert_node(pf_kdtree_t *self, pf_kdtree_node_t *par
   else if (node->leaf)
   {
     // If the keys are equal, increment the value
-    if (pf_kdtree_equal(self, key, node->key))
+    if (pf_kdtree_equal(self, key, node->key))//要插入的值和正在对比的这个节点pose一样，那直接加倍这个已有节点的权值就好了
     {
       node->value += value;
     }
 
     // The keys are not equal, so split this node
-    else
+    else//将当前对比节点作为父节点，当前对比节点、外来值作为两个子节点插入，如此以来，所有的节点都是叶节点，前辈们只是它们的复制
     {
       // Find the dimension with the largest variance and do a mean
       // split
@@ -284,7 +284,7 @@ pf_kdtree_node_t *pf_kdtree_insert_node(pf_kdtree_t *self, pf_kdtree_node_t *par
     }
   }
 
-  // If the node exists, and it has children...
+  // If the node exists, and it has children...那就把外来值拿去和当前节点的孩子去比较
   else
   {
     assert(node->children[0] != NULL);
@@ -354,7 +354,7 @@ void pf_kdtree_print_node(pf_kdtree_t *self, pf_kdtree_node_t *node)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Cluster the leaves in the tree
+// Cluster the leaves in the tree将叶子节点放一起，从前面的插入函数可知，叶节点包含了全部的节点，剩下的都是冗余复制
 void pf_kdtree_cluster(pf_kdtree_t *self)
 {
   int i;
@@ -364,7 +364,7 @@ void pf_kdtree_cluster(pf_kdtree_t *self)
   queue_count = 0;
   queue = calloc(self->node_count, sizeof(queue[0]));
 
-  // Put all the leaves in a queue
+  // Put all the leaves in a queue先把所有的叶子节点放一起
   for (i = 0; i < self->node_count; i++)
   {
     node = self->nodes + i;
@@ -382,7 +382,7 @@ void pf_kdtree_cluster(pf_kdtree_t *self)
   cluster_count = 0;
 
   // Do connected components for each node
-  while (queue_count > 0)
+  while (queue_count > 0)//给每个叶子节点及其附近的（附近的意思是指位姿近似）分配一个标签
   {
     node = queue[--queue_count];
 
@@ -410,7 +410,7 @@ void pf_kdtree_cluster_node(pf_kdtree_t *self, pf_kdtree_node_t *node, int depth
   int nkey[3];
   pf_kdtree_node_t *nnode;
 
-  for (i = 0; i < 3 * 3 * 3; i++)
+  for (i = 0; i < 3 * 3 * 3; i++)//某个位姿范围内的节点
   {
     nkey[0] = node->key[0] + (i / 9) - 1;
     nkey[1] = node->key[1] + ((i % 9) / 3) - 1;

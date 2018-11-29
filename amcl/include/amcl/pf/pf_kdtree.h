@@ -40,20 +40,20 @@ typedef struct pf_kdtree_node
   int leaf, depth;//是叶子吗？有多深？
 
   // Pivot dimension and value
-  int pivot_dim;
-  double pivot_value;
+  int pivot_dim;//比较哪一维
+  double pivot_value;//比较基准
 
   // The key for this node
-  int key[3];
+  int key[3];//本节点的pose值，放大为int型
 
   // The value for this node
-  double value;
+  double value;//本节点的权重
 
   // The cluster label (leaf nodes)
-  int cluster;
+  int cluster;//属于哪个簇
 
   // Child nodes
-  struct pf_kdtree_node *children[2];
+  struct pf_kdtree_node *children[2];//子节点们
 
 } pf_kdtree_node_t;
 
@@ -62,14 +62,14 @@ typedef struct pf_kdtree_node
 typedef struct
 {
   // Cell size
-  double size[3];
+  double size[3];//pose的放大系数
 
   // The root node of the tree
-  pf_kdtree_node_t *root;
+  pf_kdtree_node_t *root;//根节点
 
   // The number of nodes in the tree
   int node_count, node_max_count;
-  pf_kdtree_node_t *nodes;
+  pf_kdtree_node_t *nodes;//给树malloc的内存地址
 
   // The number of leaf nodes in the tree
   int leaf_count;

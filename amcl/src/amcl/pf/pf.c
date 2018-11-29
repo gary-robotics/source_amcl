@@ -126,7 +126,7 @@ void pf_free(pf_t *pf)
   return;
 }
 
-// Initialize the filter using a guassian
+// ///////////////////   采样一堆粒子初始化滤波器   ///////////////////////////Initialize the filter using a guassian
 void pf_init(pf_t *pf, pf_vector_t mean, pf_matrix_t cov)
 {
   int i;
@@ -136,27 +136,27 @@ void pf_init(pf_t *pf, pf_vector_t mean, pf_matrix_t cov)
   
   set = pf->sets + pf->current_set;
   
-  // Create the kd tree for adaptive sampling
+  // ////   创建kdtree Create the kd tree for adaptive sampling
   pf_kdtree_clear(set->kdtree);
 
-  set->sample_count = pf->max_samples;
+  set->sample_count = pf->max_samples;//@TODO:为什么是最大值
 
+  // ////  按照给定的均值和方差创建高斯pdf,高斯采样一堆粒子并统计 Compute the new sample poses
   pdf = pf_pdf_gaussian_alloc(mean, cov);
-    
-  // Compute the new sample poses
+
   for (i = 0; i < set->sample_count; i++)
   {
     sample = set->samples + i;
     sample->weight = 1.0 / pf->max_samples;
-    sample->pose = pf_pdf_gaussian_sample(pdf);
+    sample->pose = pf_pdf_gaussian_sample(pdf);//高斯采样
 
-    // Add sample to histogram
+    // 插入到kdtree  Add sample to histogram
     pf_kdtree_insert(set->kdtree, sample->pose, sample->weight);
   }
 
   pf->w_slow = pf->w_fast = 0.0;
 
-  pf_pdf_gaussian_free(pdf);
+  pf_pdf_gaussian_free(pdf);//删除高斯pdf
     
   // Re-compute cluster statistics
   pf_cluster_stats(pf, set); 
@@ -168,7 +168,8 @@ void pf_init(pf_t *pf, pf_vector_t mean, pf_matrix_t cov)
 }
 
 
-// Initialize the filter using some model
+// Initialize the filter:pf  using some model:init_fn together with map:init_data
+// 用某模型和地图来采样一堆粒子,初始化kdtree,初始化滤波器
 void pf_init_model(pf_t *pf, pf_init_model_fn_t init_fn, void *init_data)
 {
   int i;
@@ -180,26 +181,26 @@ void pf_init_model(pf_t *pf, pf_init_model_fn_t init_fn, void *init_data)
   // Create the kd tree for adaptive sampling
   pf_kdtree_clear(set->kdtree);
 
-  set->sample_count = pf->max_samples;
+  set->sample_count = pf->max_samples;//@TODO:为什么一上来就是最大值
 
   // Compute the new sample poses
   for (i = 0; i < set->sample_count; i++)
   {
     sample = set->samples + i;
-    sample->weight = 1.0 / pf->max_samples;
-    sample->pose = (*init_fn) (init_data);
+    sample->weight = 1.0 / pf->max_samples;//每个粒子的权重全都是1/n
+    sample->pose = (*init_fn) (init_data);//按照这种模型采样一个粒子@TODO:具体怎么采的
 
     // Add sample to histogram
-    pf_kdtree_insert(set->kdtree, sample->pose, sample->weight);
+    pf_kdtree_insert(set->kdtree, sample->pose, sample->weight);//将粒子插入kdtree
   }
 
   pf->w_slow = pf->w_fast = 0.0;
 
   // Re-compute cluster statistics
-  pf_cluster_stats(pf, set);
+  pf_cluster_stats(pf, set);//粒子数据统计
   
   //set converged to 0
-  pf_init_converged(pf);
+  pf_init_converged(pf);//尚未收敛完成
 
   return;
 }
